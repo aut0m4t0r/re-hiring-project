@@ -213,7 +213,7 @@ resource "aws_ecs_task_definition" "dev_frontend_task" {
   container_definitions = jsonencode([
     {
       name      = "dev-frontend"
-      image = "${jsondecode(data.aws_secretsmanager_secret_version.db_credentials.secret_string)["awsid"]}.dkr.ecr.us-east-1.amazonaws.com/my-app:latest"
+      image = "${jsondecode(data.aws_secretsmanager_secret_version.db_credentials.secret_string)["awsid"]}.dkr.ecr.us-east-1.amazonaws.com/dev-ecr-repo:latest"
       cpu       = 256
       memory    = 512
       essential = true
