@@ -199,8 +199,6 @@ resource "aws_security_group" "dev_alb_sg_backend" {
   }
 }
 
-variable "aws_account_id" {}
-
 resource "aws_ecs_cluster" "dev_cluster" {
   name = "dev-cluster"
 }
@@ -215,7 +213,7 @@ resource "aws_ecs_task_definition" "dev_frontend_task" {
   container_definitions = jsonencode([
     {
       name      = "dev-frontend"
-      image     = "${var.aws_account_id}.dkr.ecr.your-region.amazonaws.com/my-app:latest"
+      image = "${jsondecode(data.aws_secretsmanager_secret_version.db_credentials.secret_string)["awsid"]}.dkr.ecr.your-region.amazonaws.com/my-app:latest"
       cpu       = 256
       memory    = 512
       essential = true
