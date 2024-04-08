@@ -199,13 +199,13 @@ resource "aws_security_group" "dev_alb_sg_backend" {
   }
 }
 
-data "aws_caller_identity" "current" {}
+variable "aws_account_id" {}
 
 resource "aws_ecs_cluster" "dev_cluster" {
   name = "dev-cluster"
 }
 
-resource "aws_ecs_task" "dev_frontend_task" {
+resource "aws_ecs_task_definition" "dev_frontend_task" {
   family                   = "dev-frontend-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
