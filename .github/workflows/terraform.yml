@@ -49,26 +49,3 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: terraform apply -auto-approve
         working-directory: ./terraform/environments/development
-
-      # - name: Terraform init iam
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #   id: terraform-init-iam
-      #   run: terraform init
-      #   working-directory: ./terraform/environments/global/iam
-
-      # - name: Terraform Plan iam
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #   id: terraform-plan-iam
-      #   run: terraform plan
-      #   working-directory: ./terraform/environments/global/iam
-
-      # - name: Terraform Apply iam
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #   run: terraform apply -auto-approve
-      #   working-directory: ./terraform/environments/global/iam
