@@ -80,6 +80,25 @@ resource "aws_lb" "dev_alb_frontend" {
   }
 }
 
+resource "aws_lb_target_group" "dev_alb_tg" {
+  name     = "dev-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.dev_vpc.id
+  target_type = "ip"
+}
+
+resource "aws_lb_listener" "dev_alb_listener" {
+  load_balancer_arn = aws_lb.dev_alb_frontend.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.dev_alb_tg.arn
+  }
+}
+
 resource "aws_lb" "dev_alb_backend" {
   name               = "dev-alb-backend"
   internal           = true
@@ -179,3 +198,59 @@ resource "aws_security_group" "dev_alb_sg_backend" {
     Name = "dev-alb-sg-backend"
   }
 }
+
+resource "aws_ecs_cluster" "dev_cluster" {
+  name = "dev-cluster"
+}
+
+resource "aws_ecs_task_definition" "dev_frontend_task" {
+  family                   = "dev-frontend-task"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_execution_role.arn
+
+  container_definitions = jsonencode([
+    {
+      name      = "dev-frontend"
+      image = "${jsondecode(data.aws_secretsmanager_secret_version.db_credentials.secret_string)["awsid"]}.dkr.ecr.us-east-1.amazonaws.com/dev-ecr-repo:latest"
+      cpu       = 256
+      memory    = 512
+      essential = true
+      portMappings = [
+        {
+          containerPort = 80
+          hostPort      = 80
+        }
+      ]
+    }
+  ])
+
+  cpu    = "256"
+  memory = "512"
+}
+
+resource "aws_ecs_service" "dev_frontend_service" {
+  name            = "dev-frontend-service"
+  cluster         = aws_ecs_cluster.dev_cluster.id
+  task_definition = aws_ecs_task_definition.dev_frontend_task.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets         = aws_subnet.dev_public_subnet[*].id
+    assign_public_ip = true
+    security_groups = [aws_security_group.dev_alb_sg_frontend.id]
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.dev_alb_tg.arn
+    container_name   = "dev-frontend"
+    container_port   = 80
+  }
+
+  depends_on = [
+    aws_lb_listener.dev_alb_listener
+  ]
+}
+
